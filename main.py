@@ -2,11 +2,9 @@ import os
 import psycopg2
 from dotenv import load_dotenv
 
-# Загружаем переменные окружения из файла .env
 load_dotenv()
 
 def main():
-    # Подключение к базе данных PostgreSQL
     try:
         db_url = os.environ.get("DATABASE_URL")
         if not db_url:
@@ -29,28 +27,22 @@ def main():
 
     sql_upper = sql_query.upper().strip()
 
-    # Проверка: разрешены только SELECT-запросы
     if not sql_upper.startswith("SELECT"):
         print("Ошибка: разрешены только SELECT-запросы")
         cursor.close()
         conn.close()
         return
 
-    # Автоматическое добавление LIMIT 5, если его нет в запросе
     if "LIMIT" not in sql_upper:
-        # Убираем точку с запятой в конце, если пользователь её поставил, чтобы корректно дописать LIMIT
         if sql_query.endswith(";"):
             sql_query = sql_query[:-1]
         sql_query += " LIMIT 5"
 
-    # Выполнение запроса
     try:
         cursor.execute(sql_query)
         records = cursor.fetchall()
         
-        # Вывод результата в консоль в виде таблицы
         if records:
-            # Получаем названия колонок из описания курсора
             colnames = [desc[0] for desc in cursor.description]
             print("\n" + " | ".join(colnames))
             print("-" * 60)
